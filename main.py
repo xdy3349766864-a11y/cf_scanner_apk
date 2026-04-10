@@ -36,8 +36,6 @@ import os
 import threading
 
 # 安卓权限配置
-Config.set('android', 'permissions', 'INTERNET, ACCESS_NETWORK_STATE')
-Config.set('kivy', 'window_icon', 'icon.png')
 Window.clearcolor = get_color_from_hex('#121212')
 
 # 原工具核心常量（完全保留）
@@ -771,7 +769,7 @@ class CFScannerApp(App):
             })
         self.rv.data = rv_data
 
-    # 导出CSV
+    # 导出CSV (已优化安卓适配)
     def export_results(self, instance):
         if not self.speed_results:
             self.update_log("❌ 无测速结果可导出！")
@@ -779,21 +777,27 @@ class CFScannerApp(App):
         try:
             from androidstorage4kivy import SharedStorage
             ss = SharedStorage()
-            file_path = ss.get_cache_dir() + f"/CF扫描结果_{datetime.now().strftime('%Y%m%d')}.csv"
-            with open(file_path, 'w', newline='', encoding='utf-8-sig') as f:
+            # 1. 修正文件名格式，避免安卓系统不支持的字符
+            filename = f"CF_Scan_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+            
+            # 2. 先写到应用的私有缓存目录
+            cache_path = os.path.join(self.user_data_dir, filename)
+            
+            with open(cache_path, 'w', newline='', encoding='utf-8-sig') as f:
                 writer = csv.DictWriter(f, ['排名', 'IP', '地区码', '地区', '延迟', '速度', '端口', '类型'])
                 writer.writeheader()
                 for i, r in enumerate(self.speed_results, 1):
                     writer.writerow({
                         '排名': i, 'IP': r['ip'], '地区码': r['iata_code'],
                         '地区': r['chinese_name'], '延迟': f"{r['latency']:.2f}",
-                        '速度': f"{r['download_speed']:.2f}", '端口': r['port'], '类型': r['test_type']
+                        'speed': f"{r['download_speed']:.2f}", '端口': r['port'], '类型': r['test_type']
                     })
-            ss.copy_to_shared(file_path)
-            self.update_log(f"✅ 结果已导出到下载文件夹！")
+            
+            # 3. 使用 SharedStorage 真正地将文件推送到系统的“下载”文件夹
+            ss.copy_to_shared(cache_path)
+            self.update_log(f"✅ 结果已成功导出到手机【下载】(Download) 文件夹！")
         except Exception as e:
             self.update_log(f"❌ 导出失败: {str(e)}")
-
     # 停止任务
     def confirm_stop_all_tasks(self, instance):
         popup = Popup(title='确认停止', content=Label(text='确定要停止当前任务吗？'), size_hint=(0.8, 0.2))
