@@ -29,11 +29,10 @@ jobs:
       - name: Build APK with Buildozer
         run: |
           export PATH=$PATH:$HOME/.local/bin
-          # 首次运行需要接受所有协议
           buildozer android clean
           yes | buildozer android debug
 
-      - name: Upload APK Result
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: LumoHub-Final-APK
