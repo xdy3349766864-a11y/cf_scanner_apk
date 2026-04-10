@@ -1,29 +1,27 @@
 [app]
-title = CF优选工具
-package.name = cfscanner
-package.domain = org.lumohub
+# 软件名称和包名
+title = LumoHub
+package.name = lumohub
+package.domain = com.lumo
+
+# 源码目录
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
-version = 1.0
+
+# 版本号
+version = 0.1
+
+# 权限
+android.permissions = INTERNET, ACCESS_NETWORK_STATE
+
+# 图标 (确保你的文件夹里有这个图标文件)
+icon.filename = %(source.dir)s/icon.png
+
+# 必须包含 jnius 用于调用安卓底层
+requirements = python3,kivy,pyjnius
+
+# 屏幕方向
 orientation = portrait
-fullscreen = 0
 
-# 图标文件名
-icon.filename = ico.png
-
-# 依赖库：certifi 处理 HTTPS 证书，androidstorage4kivy 处理文件保存
-requirements = python3, kivy==2.3.0, pyjnius>=1.6.0, aiohttp, androidstorage4kivy, certifi
-
-android.permissions = INTERNET, ACCESS_NETWORK_STATE, WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE
-android.api = 33
-android.minapi = 21
-android.ndk = 25c
-android.build_tools_version = 33.0.2
-android.archs = arm64-v8a, armeabi-v7a
-android.enable_androidx = True
-
-[buildozer]
-log_level = 2
-warn_on_root = 1
-build_dir = ./.buildozer
-android_sdk_update = 0
+# 允许明文传输 (HTTP)
+android.manifest.attributes = android:usesCleartextTraffic="true"
