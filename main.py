@@ -1,30 +1,37 @@
 from kivy.app import App
-from kivy.uix.webview import WebView  # 注意：在安卓上通常需要 jnius 调用原生
-from android.runnable import runOnMainThread
+from kivy.uix.widget import Widget
 from jnius import autoclass
+from android.runnable import runOnMainThread
 
-# 导入安卓原生类
+# 调用 Android 原生类
 WebView = autoclass('android.webkit.WebView')
 WebViewClient = autoclass('android.webkit.WebViewClient')
-android_activity = autoclass('org.kivy.android.PythonActivity').mActivity
+PythonActivity = autoclass('org.kivy.android.PythonActivity')
 
 class LumoHubApp(App):
     def build(self):
         self.create_webview()
-        return None  # Kivy 界面留空，直接覆盖原生 WebView
+        return Widget()  # 返回一个空挂件，界面由原生 WebView 覆盖
 
     @runOnMainThread
     def create_webview(self):
-        webview = WebView(android_activity)
+        activity = PythonActivity.mActivity
+        webview = WebView(activity)
+        
+        # 配置 WebView 设置
         settings = webview.getSettings()
         settings.setJavaScriptEnabled(True)
         settings.setDomStorageEnabled(True)
+        settings.setDatabaseEnabled(True)
         
-        # 核心：确保跳转不跳出 App
+        # 核心：设置 WebViewClient 确保不跳转到浏览器
         webview.setWebViewClient(WebViewClient())
         
-        android_activity.setContentView(webview)
+        # 加载你的网页
         webview.loadUrl("https://zy.3349766.xyz")
+        
+        # 将 WebView 设置为当前显示的视图
+        activity.setContentView(webview)
 
 if __name__ == '__main__':
     LumoHubApp().run()
